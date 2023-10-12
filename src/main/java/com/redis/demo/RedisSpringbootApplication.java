@@ -31,6 +31,7 @@ public class RedisSpringbootApplication implements CommandLineRunner {
 		System.out.println("------------------------------");
 
 		redisTemplate.opsForValue().set("obj1", new User(10L, "narasimha", "ram", "narasimha.ram@gmail.com", 1000));
+		System.out.println("*** getting value from redis: " + redisTemplate.opsForValue().get("obj1"));
 
 	}
 }

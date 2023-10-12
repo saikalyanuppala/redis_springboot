@@ -6,20 +6,20 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.redis.demo.service.EntityService;
-import com.redis.demo.service.TransactionService;
+import com.redis.demo.service.RedissonClientService;
 
 @RestController
-public class EntityController {
+public class RedissonController {
 
 	@Autowired
-	private TransactionService transactionService;
+	private RedissonClientService redissonClientService;
 
 	@Autowired
 	private EntityService entityService;
 
 	@PutMapping("/updateEntity/{entityId}")
 	public String updateEntity(@PathVariable Long entityId) throws InterruptedException {
-		boolean lockAcquired = transactionService.acquireTransactionLock(entityId);
+		boolean lockAcquired = redissonClientService.acquireLock(entityId);
 		if (lockAcquired) {
 			try {
 				Thread.sleep(5000);
@@ -27,7 +27,7 @@ public class EntityController {
 				boolean updateSuccessful = entityService.updateEntity(entityId);
 
 				// Adjust the lock timeout dynamically based on the update duration
-				transactionService.releaseTransactionLock(entityId);
+				redissonClientService.releaseLock(entityId);
 
 				if (updateSuccessful) {
 					return "Entity updated successfully.";
@@ -35,7 +35,7 @@ public class EntityController {
 					return "Unable to update the entity.";
 				}
 			} finally {
-				transactionService.releaseTransactionLock(entityId);
+				redissonClientService.releaseLock(entityId);
 			}
 		} else {
 			return "Unable to acquire lock. Another user is updating the entity with id " + entityId

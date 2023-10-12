@@ -8,14 +8,14 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class TransactionService {
+public class RedissonClientService {
 
 	@Autowired
 	private RedissonClient redissonClient;
 
 	private static final String TRANSACTION_LOCK_KEY_PREFIX = "transactionLock:";
 
-	public boolean acquireTransactionLock(Long entityId) {
+	public boolean acquireLock(Long entityId) {
 		String lockKey = TRANSACTION_LOCK_KEY_PREFIX + entityId;
 		RLock lock = redissonClient.getLock(lockKey);
 		try {
@@ -27,7 +27,7 @@ public class TransactionService {
 		}
 	}
 
-	public void releaseTransactionLock(Long entityId) {
+	public void releaseLock(Long entityId) {
 		String lockKey = TRANSACTION_LOCK_KEY_PREFIX + entityId;
 		RLock lock = redissonClient.getLock(lockKey);
 		if (lock.isHeldByCurrentThread()) {
